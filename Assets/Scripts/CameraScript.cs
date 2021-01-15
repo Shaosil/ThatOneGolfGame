@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
+    public float OrbitSensitivity = 1f;
     private float zoomLevel;
     private Vector2 rotationValues;
 
@@ -18,7 +19,7 @@ public class CameraScript : MonoBehaviour
         // Rotate cam
         if (Input.GetMouseButton(1))
         {
-            var mouseMovement = new Vector2(-Input.GetAxis("Mouse Y") * 3f, Input.GetAxis("Mouse X") * 3f);
+            var mouseMovement = new Vector2(-Input.GetAxis("Mouse Y") * OrbitSensitivity, Input.GetAxis("Mouse X") * OrbitSensitivity);
             rotationValues += mouseMovement * Time.unscaledDeltaTime * 300f;
             rotationValues = new Vector2(Mathf.Clamp(rotationValues.x, -80f, 80f), rotationValues.y);
         }

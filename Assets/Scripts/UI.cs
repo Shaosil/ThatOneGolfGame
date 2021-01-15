@@ -3,29 +3,38 @@ using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
-    public Button LineUpShotButton { get; private set; }
-    public Button StartSwingButton { get; private set; }
-    public Text SwingInstructionsText { get; private set; }
+    private Button lineUpShotButton;
+    private Button prepSwingButton;
+    private Text swingInstructionsText;
 
     private void Start()
     {
-        LineUpShotButton = transform.Find("LineUpShot").GetComponent<Button>();
-        StartSwingButton = transform.Find("StartSwing").GetComponent<Button>();
-        SwingInstructionsText = transform.Find("SwingInstructions").GetComponent<Text>();
+        lineUpShotButton = transform.Find("LineUpShot").GetComponent<Button>();
+        prepSwingButton = transform.Find("PrepSwing").GetComponent<Button>();
+        swingInstructionsText = transform.Find("SwingInstructions").GetComponent<Text>();
+    }
+
+    private void Update()
+    {
+        // Set button visibilities based on current putting state
+        bool lineUpVisible = GameManager.CurPuttingState == GameManager.ePuttingState.NotPutting
+            || GameManager.CurPuttingState == GameManager.ePuttingState.LinedUp;
+        bool prepSwingVisible = GameManager.CurPuttingState == GameManager.ePuttingState.LinedUp;
+        bool swingInstructionsVisisble = GameManager.CurPuttingState == GameManager.ePuttingState.SwingPrep ||
+            GameManager.CurPuttingState == GameManager.ePuttingState.Swinging;
+
+        if (lineUpVisible != lineUpShotButton.interactable) lineUpShotButton.interactable = lineUpVisible;
+        if (prepSwingVisible != prepSwingButton.interactable) prepSwingButton.interactable = prepSwingVisible;
+        if (swingInstructionsVisisble != swingInstructionsText.gameObject.activeSelf) swingInstructionsText.gameObject.SetActive(swingInstructionsVisisble);
     }
 
     public void LineUpShot_Click()
     {
-        LineUpShotButton.interactable = false;
-        StartSwingButton.interactable = false;
-        GameManager.LiningUpShot = true;
+        GameManager.CurPuttingState = GameManager.ePuttingState.LiningUpShot;
     }
 
-    public void StartSwing_Click()
+    public void PrepSwing_Click()
     {
-        LineUpShotButton.interactable = false;
-        StartSwingButton.interactable = false;
-        SwingInstructionsText.gameObject.SetActive(true);
-        GameManager.Swinging = true;
+        GameManager.CurPuttingState = GameManager.ePuttingState.SwingPrep;
     }
 }

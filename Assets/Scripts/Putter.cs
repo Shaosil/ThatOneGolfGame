@@ -8,34 +8,79 @@ public class Putter : MonoBehaviour
     private Rigidbody ballRb;
     private Transform putterBaseTransform;
     private GameObject putterMesh;
+    private Animator animator;
 
     private void Start()
     {
         ballRb = GameObject.Find("Ball").GetComponent<Rigidbody>();
         putterBaseTransform = transform.parent;
         putterMesh = transform.GetChild(0).gameObject;
+        animator = GetComponent<Animator>();
     }
 
     private void Update()
     {
-        if (GameManager.LiningUpShot)
-            UpdatePutterPosition();
+        bool swung = false;
 
-        if (Input.GetMouseButtonDown(0) && GameManager.LiningUpShot)
+        switch (GameManager.CurPuttingState)
         {
-            // Prepare the putter
-            GameManager.LiningUpShot = false;
-            GameManager.UI.LineUpShotButton.interactable = true;
-            GameManager.UI.StartSwingButton.interactable = true;
+            case GameManager.ePuttingState.LiningUpShot:
+                UpdatePutterPosition();
+
+                if (Input.GetMouseButtonDown(0) && putterMesh.activeSelf)
+                {
+                    // Prepare the putter
+                    GameManager.CurPuttingState = GameManager.ePuttingState.LinedUp;
+                }
+                break;
+
+            case GameManager.ePuttingState.SwingPrep:
+                if (Input.GetMouseButtonDown(0))
+                {
+                    // Initial left click - go to swinging state and start swinging animation
+                    GameManager.CurPuttingState = GameManager.ePuttingState.Swinging;
+                    animator.SetBool("startingSwing", true);
+                }
+                else if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    // Cancel and go back to a lined up state
+                    GameManager.CurPuttingState = GameManager.ePuttingState.LinedUp;
+                }
+                
+                break;
+
+            case GameManager.ePuttingState.Swinging:
+                swung = animator.GetBool("swung");
+                if (swung)
+                    break;
+
+                if (!Input.GetMouseButton(0))
+                {
+                    // Commit the swing
+                    animator.SetBool("swung", true);
+                }
+
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    // Cancel the swing
+                    animator.SetBool("startingSwing", false);
+                    GameManager.CurPuttingState = GameManager.ePuttingState.SwingPrep;
+                }
+                break;
         }
-        else if (Input.GetMouseButton(0) && GameManager.Swinging)
+
+        // Hit the ball once the putter reaches a certain angle
+        var angle = transform.localEulerAngles.z % 360;
+        angle = angle > 180 ? angle - 360 : angle;
+
+        if (swung && angle > 6f)
         {
-            // Hold down to adjust power - TODO
-        }
-        
-        if (Input.GetMouseButtonDown(1) && GameManager.Swinging)
-        {
-            // Cancel the swing - TODO
+            GameManager.CurPuttingState = GameManager.ePuttingState.NotPutting;
+            animator.SetBool("swung", false);
+            animator.SetBool("startingSwing", false);
+
+            var normalizedVector = (ballRb.transform.position - transform.parent.position).normalized;
+            ballRb.AddForce(normalizedVector * 7.5f, ForceMode.Impulse);
         }
     }
 
@@ -71,11 +116,5 @@ public class Putter : MonoBehaviour
         {
             putterMesh.gameObject.SetActive(false);
         }
-    }
-
-    private void TestAnimationCall(string s)
-    {
-        var normalizedVector = (ballRb.transform.position - transform.parent.position).normalized;
-        ballRb.AddForce(normalizedVector * 7.5f, ForceMode.Impulse);
     }
 }

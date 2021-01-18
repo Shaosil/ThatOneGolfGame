@@ -198,6 +198,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Arrow
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ffdef52232fe651488d53a5b5a5798ef, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ffdef52232fe651488d53a5b5a5798ef, type: 3}
 --- !u!1 &56990645 stripped
@@ -1084,7 +1088,7 @@ Animation:
   m_GameObject: {fileID: 1269036312}
   m_Enabled: 1
   serializedVersion: 3
-  m_Animation: {fileID: 0}
+  m_Animation: {fileID: 7400000, guid: ff4cb0ac1add6cf459491aefd554a56f, type: 2}
   m_Animations:
   - {fileID: 7400000, guid: ff4cb0ac1add6cf459491aefd554a56f, type: 2}
   m_WrapMode: 0
@@ -1164,7 +1168,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: ea3d92c61da001a4b9d0ec671e9e5d30, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ea3d92c61da001a4b9d0ec671e9e5d30, type: 3}

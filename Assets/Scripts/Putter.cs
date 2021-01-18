@@ -4,17 +4,25 @@ public class Putter : MonoBehaviour
 {
     // TODO: OPTIONS
     private bool rightHanded = true;
+    private string startingSwingName = "startingSwingR";
+    private string swungName = "swungR";
 
     private Rigidbody ballRb;
     private Transform putterBaseTransform;
     private GameObject putterMesh;
+    private GameObject arrowMesh;
     private Animator animator;
+
+    private float swingPowerPercent = 0f;
+    private float fullSwingForce = 10f;
+    private float maxSwingAngle = 45f;
 
     private void Start()
     {
         ballRb = GameObject.Find("Ball").GetComponent<Rigidbody>();
         putterBaseTransform = transform.parent;
         putterMesh = transform.GetChild(0).gameObject;
+        arrowMesh = putterBaseTransform.Find("Arrow").gameObject;
         animator = GetComponent<Animator>();
     }
 
@@ -39,48 +47,50 @@ public class Putter : MonoBehaviour
                 {
                     // Initial left click - go to swinging state and start swinging animation
                     GameManager.CurPuttingState = GameManager.ePuttingState.Swinging;
-                    animator.SetBool("startingSwing", true);
+                    animator.SetBool(startingSwingName, true);
+                    arrowMesh.SetActive(false);
                 }
                 else if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     // Cancel and go back to a lined up state
                     GameManager.CurPuttingState = GameManager.ePuttingState.LinedUp;
                 }
-                
+
                 break;
 
             case GameManager.ePuttingState.Swinging:
-                swung = animator.GetBool("swung");
+                swung = animator.GetBool(swungName);
                 if (swung)
                     break;
 
                 if (!Input.GetMouseButton(0))
                 {
-                    // Commit the swing
-                    animator.SetBool("swung", true);
+                    // Commit the swing - calculate the force of the swing by percentage of max angle
+                    animator.SetBool(swungName, true);
+                    swingPowerPercent = Mathf.Clamp(Mathf.Abs(GetWrappedAngle(transform.localEulerAngles.z)) / maxSwingAngle, 0.1f, 1);
                 }
 
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     // Cancel the swing
-                    animator.SetBool("startingSwing", false);
+                    animator.SetBool(startingSwingName, false);
+                    arrowMesh.SetActive(true);
                     GameManager.CurPuttingState = GameManager.ePuttingState.SwingPrep;
                 }
                 break;
         }
 
         // Hit the ball once the putter reaches a certain angle
-        var angle = transform.localEulerAngles.z % 360;
-        angle = angle > 180 ? angle - 360 : angle;
-
-        if (swung && angle > 6f)
+        var angle = GetWrappedAngle(transform.localEulerAngles.z);
+        if (swung && ((rightHanded && angle > 6f) || (!rightHanded && angle < -6f)))
         {
             GameManager.CurPuttingState = GameManager.ePuttingState.NotPutting;
-            animator.SetBool("swung", false);
-            animator.SetBool("startingSwing", false);
+            animator.SetBool(swungName, false);
+            animator.SetBool(startingSwingName, false);
 
             var normalizedVector = (ballRb.transform.position - transform.parent.position).normalized;
-            ballRb.AddForce(normalizedVector * 7.5f, ForceMode.Impulse);
+            ballRb.AddForce(normalizedVector * (fullSwingForce * swingPowerPercent), ForceMode.Impulse);
+            swingPowerPercent = 0f;
         }
     }
 
@@ -96,7 +106,7 @@ public class Putter : MonoBehaviour
         {
             // Make it visible if it isn't already
             if (!putterMesh.gameObject.activeSelf)
-                putterMesh.gameObject.SetActive(true);
+                TogglePutterAndArrow(true);
 
             // Get angle from cursor to ball
             float hitDeltaX = hitInfo.point.z - GameManager.Ball.transform.position.z;
@@ -114,7 +124,20 @@ public class Putter : MonoBehaviour
         }
         else if (putterMesh.gameObject.activeSelf)
         {
-            putterMesh.gameObject.SetActive(false);
+            TogglePutterAndArrow(false);
         }
+    }
+
+    private void TogglePutterAndArrow(bool visible)
+    {
+        putterMesh.SetActive(visible);
+        arrowMesh.SetActive(visible);
+    }
+
+    private float GetWrappedAngle(float angle)
+    {
+        // Constrain an angle to -180 to 180
+        angle %= 360;
+        return angle > 180 ? angle - 360 : angle;
     }
 }

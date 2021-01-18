@@ -1,0 +1,5 @@
+﻿* Get better controls
+* Let ball be placeable
+* Shrink size of ball
+* Make a simple win condition
+* Make more levels

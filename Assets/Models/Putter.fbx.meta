@@ -8,12 +8,12 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Putter Handle
-    second: {fileID: 2100000, guid: 426e600426fb7234ab69799cc299dfee, type: 2}
+    second: {fileID: 2100000, guid: b870f2bfad9ac724588f0cdcf57b73d5, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Putter Head
-    second: {fileID: 2100000, guid: c03909ea4ab43bc489916310e2243ffa, type: 2}
+    second: {fileID: 2100000, guid: 53aa3ea0ff8e86f4080781130ac0e2c6, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

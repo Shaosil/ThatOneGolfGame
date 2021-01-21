@@ -4,7 +4,7 @@ public static class GameManager
 {
     private static bool initialized = false;
 
-    public enum ePuttingState { NotPutting, LiningUpShot, LinedUp, SwingPrep, Swinging }
+    public enum ePuttingState { NotPutting, PlacingPutter, PutterPlaced, Swinging }
     public static ePuttingState CurPuttingState { get; set; } = ePuttingState.NotPutting;
 
     public static Camera TheCameraThatIsSupposedToFollowTheBall { get; private set; }

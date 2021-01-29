@@ -22,7 +22,7 @@ public class Putter : MonoBehaviour
 
     private void Start()
     {
-        ballRb = GameObject.Find("Ball").GetComponent<Rigidbody>();
+        ballRb = GameManager.Ball.GetComponent<Rigidbody>();
         putterBaseTransform = transform.parent;
         putterMesh = transform.GetChild(0).gameObject;
         arrowMesh = putterBaseTransform.Find("Arrow").gameObject;
@@ -33,43 +33,41 @@ public class Putter : MonoBehaviour
     {
         bool swung = false;
 
-        switch (GameManager.CurPuttingState)
+        switch (GameManager.CurGameState)
         {
-            case GameManager.ePuttingState.PlacingPutter:
-                DetectPutterPlacement();
+            case GameManager.eGameState.PlacingPutter:
+                PlacePutter();
 
                 if (Input.GetMouseButtonDown(0) && putterMesh.activeSelf)
-                    GameManager.CurPuttingState = GameManager.ePuttingState.PutterPlaced;
+                    GameManager.CurGameState = GameManager.eGameState.PutterPlaced;
                 break;
 
-            case GameManager.ePuttingState.PutterPlaced:
+            case GameManager.eGameState.PutterPlaced:
                 // Click and drag
                 if (!draggingPutter && Input.GetMouseButtonDown(0))
                 {
                     // Detect if the putter has been clicked
-                    var ray = GameManager.TheCameraThatIsSupposedToFollowTheBall.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out var hitInfo, 10, LayerMask.GetMask("Putter")))
-                    {
-                        // TODO
+                    if (Physics.Raycast(GameManager.CastCursor, out var hitInfo, 10, LayerMask.GetMask("Putter")))
                         draggingPutter = true;
-                    }
                 }
-                else if (draggingPutter && !Input.GetMouseButton(0))
+                else if (draggingPutter)
                 {
-                    // TODO
-                    draggingPutter = false;
+                    if (!Input.GetMouseButton(0))
+                        draggingPutter = false;
+                    else
+                        ClickAndDrag();
                 }
 
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     // Initial left click - go to swinging state and start swinging animation
-                    GameManager.CurPuttingState = GameManager.ePuttingState.Swinging;
+                    GameManager.CurGameState = GameManager.eGameState.Swinging;
                     animator.SetBool(startingSwingName, true);
                     arrowMesh.SetActive(false);
                 }
                 break;
 
-            case GameManager.ePuttingState.Swinging:
+            case GameManager.eGameState.Swinging:
                 swung = animator.GetBool(swungName);
                 if (swung)
                     break;
@@ -79,7 +77,7 @@ public class Putter : MonoBehaviour
                     // Cancel the swing
                     animator.SetBool(startingSwingName, false);
                     arrowMesh.SetActive(true);
-                    GameManager.CurPuttingState = GameManager.ePuttingState.PutterPlaced;
+                    GameManager.CurGameState = GameManager.eGameState.PutterPlaced;
                 }
 
                 if (Input.GetKeyUp(KeyCode.Space))
@@ -96,7 +94,6 @@ public class Putter : MonoBehaviour
         var angle = GetWrappedAngle(transform.localEulerAngles.z);
         if (swung && ((rightHanded && angle > 6f) || (!rightHanded && angle < -6f)))
         {
-            GameManager.CurPuttingState = GameManager.ePuttingState.NotPutting;
             animator.SetBool(swungName, false);
             animator.SetBool(startingSwingName, false);
 
@@ -106,11 +103,10 @@ public class Putter : MonoBehaviour
         }
     }
 
-    private void DetectPutterPlacement()
+    private void PlacePutter()
     {
         // Figure out the angle from the ball to the cursor
-        var ray = GameManager.TheCameraThatIsSupposedToFollowTheBall.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray.origin, ray.direction, out var hitInfo, 10, LayerMask.GetMask("PutterPlane"))
+        if (Physics.Raycast(GameManager.CastCursor, out var hitInfo, 10, LayerMask.GetMask("PutterPlane"))
             && Vector3.Distance(GameManager.Ball.transform.position, hitInfo.point) > 0.25f)
         {
             // Make it visible if it isn't already
@@ -139,19 +135,10 @@ public class Putter : MonoBehaviour
 
     private void ClickAndDrag()
     {
-        //// Get angle from cursor to ball
-        //float hitDeltaX = hitInfo.point.z - GameManager.Ball.transform.position.z;
-        //float hitDeltaY = hitInfo.point.x - GameManager.Ball.transform.position.x;
-        //float putterAngle = Mathf.Atan2(hitDeltaX, hitDeltaY) * 180 / Mathf.PI; // Degrees
-
-        //// Calclate base point offset from ball based on found angle
-        //float putterAngleRads = putterAngle * Mathf.Deg2Rad;
-        //var newPointOffset = new Vector3(Mathf.Cos(putterAngleRads), 0, Mathf.Sin(putterAngleRads));
-
-        //putterBaseTransform.position = GameManager.Ball.transform.position + (newPointOffset * putterDistanceFromBall);
-
-        //// Rotate putter to face ball
-        //putterBaseTransform.rotation = Quaternion.Euler(new Vector3(putterBaseTransform.eulerAngles.x, -putterAngle + (rightHanded ? 180 : 0), putterBaseTransform.eulerAngles.z));
+        var speed = -Input.GetAxis("Mouse X");
+        var newRotation = Quaternion.Euler(putterBaseTransform.eulerAngles.x, putterBaseTransform.eulerAngles.y + (speed * 5f), putterBaseTransform.eulerAngles.z);
+        var lookPosition = GameManager.Ball.transform.position - ((newRotation * Vector3.right) * putterDistanceFromBall);
+        putterBaseTransform.SetPositionAndRotation(lookPosition, newRotation);
     }
 
     private void TogglePutterAndArrow(bool visible)

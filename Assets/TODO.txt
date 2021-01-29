@@ -1,5 +1,3 @@
-﻿* Get better controls
-* Let ball be placeable
-* Shrink size of ball
-* Make a simple win condition
+﻿* Update course ground texture(s) to have a grid
 * Make more levels
+* Make a simple win condition

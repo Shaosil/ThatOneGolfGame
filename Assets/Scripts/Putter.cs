@@ -9,13 +9,13 @@ public class Putter : MonoBehaviour
 
     private Rigidbody ballRb;
     private Transform putterBaseTransform;
-    private GameObject putterMesh;
+    private GameObject putter;
     private GameObject arrowMesh;
     private Animator animator;
 
     private float putterDistanceFromBall = 0.5f;
     private float swingPowerPercent = 0f;
-    private float fullSwingForce = 10f;
+    private float fullSwingForce = 2.5f;
     private float maxSwingAngle = 45f;
 
     private bool draggingPutter = false;
@@ -24,7 +24,7 @@ public class Putter : MonoBehaviour
     {
         ballRb = GameManager.Ball.GetComponent<Rigidbody>();
         putterBaseTransform = transform.parent;
-        putterMesh = transform.GetChild(0).gameObject;
+        putter = transform.GetChild(0).gameObject;
         arrowMesh = putterBaseTransform.Find("Arrow").gameObject;
         animator = GetComponent<Animator>();
     }
@@ -38,7 +38,7 @@ public class Putter : MonoBehaviour
             case GameManager.eGameState.PlacingPutter:
                 PlacePutter();
 
-                if (Input.GetMouseButtonDown(0) && putterMesh.activeSelf)
+                if (Input.GetMouseButtonDown(0) && putter.activeSelf)
                     GameManager.CurGameState = GameManager.eGameState.PutterPlaced;
                 break;
 
@@ -88,6 +88,16 @@ public class Putter : MonoBehaviour
                     swingPowerPercent = Mathf.Clamp(swingAngle / maxSwingAngle, 0.1f, 1);
                 }
                 break;
+
+            case GameManager.eGameState.BallMoving:
+                if (Mathf.Abs(ballRb.velocity.magnitude) < 0.05f)
+                {
+                    ballRb.velocity = Vector3.zero;
+                    ballRb.angularVelocity = Vector3.zero;
+                    GameManager.CurGameState = GameManager.eGameState.PlacingPutter;
+                }
+
+                break;
         }
 
         // Hit the ball once the putter reaches a certain angle
@@ -100,6 +110,8 @@ public class Putter : MonoBehaviour
             var normalizedVector = (ballRb.transform.position - transform.parent.position).normalized;
             ballRb.AddForce(normalizedVector * (fullSwingForce * swingPowerPercent), ForceMode.Impulse);
             swingPowerPercent = 0f;
+
+            GameManager.CurGameState = GameManager.eGameState.BallMoving;
         }
     }
 
@@ -110,7 +122,7 @@ public class Putter : MonoBehaviour
             && Vector3.Distance(GameManager.Ball.transform.position, hitInfo.point) > 0.25f)
         {
             // Make it visible if it isn't already
-            if (!putterMesh.gameObject.activeSelf)
+            if (!putter.gameObject.activeSelf)
                 TogglePutterAndArrow(true);
 
             // Get angle from cursor to ball
@@ -127,7 +139,7 @@ public class Putter : MonoBehaviour
             // Rotate putter to face ball
             putterBaseTransform.rotation = Quaternion.Euler(new Vector3(putterBaseTransform.eulerAngles.x, -putterAngle + (rightHanded ? 180 : 0), putterBaseTransform.eulerAngles.z));
         }
-        else if (putterMesh.gameObject.activeSelf)
+        else if (putter.gameObject.activeSelf)
         {
             TogglePutterAndArrow(false);
         }
@@ -143,7 +155,7 @@ public class Putter : MonoBehaviour
 
     private void TogglePutterAndArrow(bool visible)
     {
-        putterMesh.SetActive(visible);
+        putter.SetActive(visible);
         arrowMesh.SetActive(visible);
     }
 

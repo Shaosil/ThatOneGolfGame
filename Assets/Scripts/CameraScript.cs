@@ -57,7 +57,6 @@ public class CameraScript : MonoBehaviour
 
     private void FollowAndOrbitBall()
     {
-
         // Zoom cam
         var zoomInput = -Input.GetAxis("Mouse ScrollWheel") * 5f;
         zoomLevel = Mathf.Clamp(zoomLevel + zoomInput, 1f, 10f);

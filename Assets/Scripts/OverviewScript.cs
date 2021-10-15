@@ -17,5 +17,10 @@ public class OverviewScript : MonoBehaviour
             GameManager.Ball.GetComponent<Rigidbody>().isKinematic = true;
             GameManager.Ball.position = hitInfo.point;
         }
+
+        // Listen for reset level requests
+        // TODO: Remove or disable debug-only feature
+        if (Input.GetKeyDown(KeyCode.Backspace))
+            GameManager.Reset();
     }
 }

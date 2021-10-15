@@ -1,3 +1,2 @@
-﻿* Update course ground texture(s) to have a grid
-* Make more levels
+﻿* Make more levels
 * Make a simple win condition

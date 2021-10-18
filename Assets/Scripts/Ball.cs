@@ -2,13 +2,17 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
-    private Rigidbody rb;
     private bool draggingPlacement = false;
 
+    public Rigidbody Rigidbody { get; private set; }
+    public Collider Collider { get; private set; }
+
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        Rigidbody = GetComponent<Rigidbody>();
+        Rigidbody.maxAngularVelocity = 100;
+        Collider = GetComponent<Collider>();
     }
 
     // Update is called once per frame

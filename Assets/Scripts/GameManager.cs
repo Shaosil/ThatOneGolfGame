@@ -14,7 +14,7 @@ public static class GameManager
 
     public static Camera TheCameraThatIsSupposedToFollowTheBall { get; private set; }
     public static Ray CastCursor => TheCameraThatIsSupposedToFollowTheBall.ScreenPointToRay(Input.mousePosition);
-    public static Transform Ball { get; private set; }
+    public static Ball Ball { get; private set; }
     public static Transform PlacementZone { get; set; }
     public static Transform PutterPlane { get; set; }
     public static Transform Putter { get; set; }
@@ -24,13 +24,15 @@ public static class GameManager
         if (initialized) return;
 
         TheCameraThatIsSupposedToFollowTheBall = GameObject.Find("Main Camera").GetComponent<Camera>();
-        Ball = GameObject.Find("Course").transform.Find("Ball");
-        PlacementZone = GameObject.Find("Course").transform.Find("Placement Zone");
-        PutterPlane = GameObject.Find("Course").transform.Find("PutterPlane");
-        Putter = GameObject.Find("Course").transform.Find("PutterPlane/PutterBase/PutterPivot/Putter");
+        var startingObjets = GameObject.Find("/Starting Objects").transform;
+        Ball = startingObjets.Find("Ball").GetComponent<Ball>();
+        PlacementZone = startingObjets.Find("Placement Zone");
+        PutterPlane = startingObjets.Find("PutterPlane");
+        Putter = PutterPlane.Find("PutterPlane/PutterBase/PutterPivot/Putter");
 
         _originalPositions = new Dictionary<GameObject, Vector3>
         {
+            { TheCameraThatIsSupposedToFollowTheBall.gameObject, TheCameraThatIsSupposedToFollowTheBall.transform.position },
             { Ball.gameObject, Ball.transform.position }
         };
 
@@ -42,7 +44,7 @@ public static class GameManager
         CurGameState = eGameState.PlacingBall;
         PlacementZone.gameObject.SetActive(true);
         PutterPlane.gameObject.SetActive(false);
-        Ball.GetComponent<Rigidbody>().isKinematic = true;
+        Ball.Rigidbody.isKinematic = true;
 
         foreach (var obj in _originalPositions.Keys)
         {

@@ -6,8 +6,8 @@ public class Putter : MonoBehaviour
     private bool rightHanded = true;
     private string startingSwingName = "startingSwingR";
     private string swungName = "swungR";
-
-    private Rigidbody ballRb;
+    private bool _swung = false;
+    
     private Transform putterBaseTransform;
     private GameObject putter;
     private GameObject arrowMesh;
@@ -15,14 +15,13 @@ public class Putter : MonoBehaviour
 
     private float putterDistanceFromBall = 0.5f;
     private float swingPowerPercent = 0f;
-    private float fullSwingForce = 2.5f;
+    private float fullSwingForce = 2f;
     private float maxSwingAngle = 45f;
 
     private bool draggingPutter = false;
 
     private void Start()
     {
-        ballRb = GameManager.Ball.GetComponent<Rigidbody>();
         putterBaseTransform = transform.parent;
         putter = transform.GetChild(0).gameObject;
         arrowMesh = putterBaseTransform.Find("Arrow").gameObject;
@@ -31,8 +30,6 @@ public class Putter : MonoBehaviour
 
     private void Update()
     {
-        bool swung = false;
-
         switch (GameManager.CurGameState)
         {
             case GameManager.eGameState.PlacingPutter:
@@ -68,8 +65,8 @@ public class Putter : MonoBehaviour
                 break;
 
             case GameManager.eGameState.Swinging:
-                swung = animator.GetBool(swungName);
-                if (swung)
+                _swung = animator.GetBool(swungName);
+                if (_swung)
                     break;
 
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -88,27 +85,34 @@ public class Putter : MonoBehaviour
                     swingPowerPercent = Mathf.Clamp(swingAngle / maxSwingAngle, 0.1f, 1);
                 }
                 break;
+        }
+    }
 
+    private void FixedUpdate()
+    {
+        // Handle physics related updates here
+        switch (GameManager.CurGameState)
+        {
             case GameManager.eGameState.BallMoving:
-                if (Mathf.Abs(ballRb.velocity.magnitude) < 0.05f)
+                if (Mathf.Abs(GameManager.Ball.Rigidbody.velocity.magnitude) < 0.05f)
                 {
-                    ballRb.velocity = Vector3.zero;
-                    ballRb.angularVelocity = Vector3.zero;
+                    GameManager.Ball.Rigidbody.velocity = Vector3.zero;
+                    GameManager.Ball.Rigidbody.angularVelocity = Vector3.zero;
                     GameManager.CurGameState = GameManager.eGameState.PlacingPutter;
                 }
-
                 break;
         }
 
         // Hit the ball once the putter reaches a certain angle
         var angle = GetWrappedAngle(transform.localEulerAngles.z);
-        if (swung && ((rightHanded && angle > 6f) || (!rightHanded && angle < -6f)))
+        if (_swung && ((rightHanded && angle > 6f) || (!rightHanded && angle < -6f)))
         {
+            _swung = false;
             animator.SetBool(swungName, false);
             animator.SetBool(startingSwingName, false);
 
-            var normalizedVector = (ballRb.transform.position - transform.parent.position).normalized;
-            ballRb.AddForce(normalizedVector * (fullSwingForce * swingPowerPercent), ForceMode.Impulse);
+            var normalizedVector = (GameManager.Ball.transform.position - transform.parent.position).normalized;
+            GameManager.Ball.Rigidbody.AddForce(normalizedVector * (fullSwingForce * swingPowerPercent), ForceMode.Impulse);
             swingPowerPercent = 0f;
 
             GameManager.CurGameState = GameManager.eGameState.BallMoving;

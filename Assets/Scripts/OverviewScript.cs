@@ -14,8 +14,8 @@ public class OverviewScript : MonoBehaviour
             && Physics.Raycast(GameManager.CastCursor, out var hitInfo, 10, LayerMask.GetMask("PutterPlane")))
         {
             GameManager.Ball.gameObject.SetActive(true);
-            GameManager.Ball.GetComponent<Rigidbody>().isKinematic = true;
-            GameManager.Ball.position = hitInfo.point;
+            GameManager.Ball.Rigidbody.isKinematic = true;
+            GameManager.Ball.transform.position = hitInfo.point;
         }
 
         // Listen for reset level requests

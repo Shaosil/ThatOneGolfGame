@@ -38,6 +38,6 @@ public class UI : MonoBehaviour
         GameManager.CurGameState = GameManager.eGameState.PlacingPutter;
         GameManager.PutterPlane.gameObject.SetActive(true);
         GameManager.PlacementZone.gameObject.SetActive(false);
-        GameManager.Ball.GetComponent<Rigidbody>().isKinematic = false;
+        GameManager.Ball.Rigidbody.isKinematic = false;
     }
 }

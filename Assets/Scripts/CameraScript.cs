@@ -2,14 +2,14 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    private float RotationSensitivity = 50f;
+    private float RotationSensitivity = 100f;
     private float zoomLevel;
     private Vector2 rotationValues;
 
     // Start is called before the first frame update
     void Start()
     {
-        zoomLevel = (GameManager.TheCameraThatIsSupposedToFollowTheBall.transform.position - GameManager.Ball.position).magnitude;
+        zoomLevel = (GameManager.TheCameraThatIsSupposedToFollowTheBall.transform.position - GameManager.Ball.transform.position).magnitude;
         rotationValues = new Vector2(GameManager.TheCameraThatIsSupposedToFollowTheBall.transform.eulerAngles.x, GameManager.TheCameraThatIsSupposedToFollowTheBall.transform.eulerAngles.y); ;
     }
 
@@ -58,7 +58,7 @@ public class CameraScript : MonoBehaviour
     private void FollowAndOrbitBall()
     {
         // Zoom cam
-        var zoomInput = -Input.GetAxis("Mouse ScrollWheel") * 5f;
+        var zoomInput = -Input.GetAxis("Mouse ScrollWheel") * 10f;
         zoomLevel = Mathf.Clamp(zoomLevel + zoomInput, 1f, 10f);
 
         // Follow cam
